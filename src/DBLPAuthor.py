@@ -78,22 +78,26 @@ class DBLPAuthor:
 
             # dblp-key
             dblpkey_tag = publication_tag.findChild(href=re.compile('(/db/)(\w*)/(\w*)/(.*\.html#)(.*)'))
-            result = re.compile('(/db/)(\w*)/(\w*)/(.*)(\.html#)(.*)').findall(dblpkey_tag['href'])[0]
-            venue_type = result[1]
-            venue = result[2]
-            venue_order = result[3]
-            key = result[5]
-            misc = dblpkey_tag.next_sibling
-            publication = {
-                'title': title,
-                'authors': authors,
-                'venue-type': venue_type,
-                'venue': venue.upper(),
-                'venue-order': venue_order,
-                'dblpkey': '{}/{}/{}'.format(venue_type, venue, key),
-                'misc': misc
-            }
-            publications.append(publication)
+            try:
+                result = re.compile('(/db/)(\w*)/(\w*)/(.*)(\.html#)(.*)').findall(dblpkey_tag['href'])[0]
+                print(result)
+                venue_type = result[1]
+                venue = result[2]
+                venue_order = result[3]
+                key = result[5]
+                misc = dblpkey_tag.next_sibling
+                publication = {
+                    'title': title,
+                    'authors': authors,
+                    'venue-type': venue_type,
+                    'venue': venue.upper(),
+                    'venue-order': venue_order,
+                    'dblpkey': '{}/{}/{}'.format(venue_type, venue, key),
+                    'misc': misc
+                }
+                publications.append(publication)
+            except TypeError:
+                pass
 
         self.author = {
             'author_name': self.author_name,
@@ -111,13 +115,14 @@ class DBLPAuthor:
 
     @staticmethod
     def get_authors(author_name):
-        author_list_page = urlopen('http://dblp.dagstuhl.de/search/author?xauthor={}'.format(quote(author_name)))
-        soup = BeautifulSoup(author_list_page.read())
-        author_tags = soup.find_all('author')
+        res = urlopen('http://dblp.dagstuhl.de/search/author?xauthor={}'.format(quote(author_name)))
+        dom = BeautifulSoup(res)
+        author_tags = dom.find_all('author')
         author_urlpts = list(map(lambda a: a['urlpt'], author_tags))
         return author_urlpts
 
+
 if __name__ == '__main__':
 
-    z = DBLPAuthor('z/Zheng:Qinghua')
+    z = DBLPAuthor('w/Wu:Chaohui')
     print(z.get_author())

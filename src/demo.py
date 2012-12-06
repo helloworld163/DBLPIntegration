@@ -12,11 +12,51 @@ from CDBLPAuthor import CDBLPAuthor
 
 class DBLPQuery:
 
+    base_url = 'http://dblp.dagstuhl.de'
+
     def __init__(self):
         pass
 
     @staticmethod
-    def get_publications_by_author():
+    def author_distinct(cached_set, author_name):
+        trial = author_name[0]
+        if 0x3400 < ord(trial) < 0x2b6f8:
+            print('This is a CDBLP author w/ a Chinese name.')
+
+            author_cdblp = CDBLPAuthor(author_name)
+            author_name_comp = CDBLPAuthor.getEnglishName(author_name)
+
+            res = urlopen('{}/search/author?xauthor={}'.format(DBLPQuery.base_url, quote(author_name_comp['full_name'])))
+            dom = BeautifulSoup(res)
+
+            candidate_authors = []
+            author_tags = dom.find_all('author')
+
+            for author_tag in author_tags:
+                if author_tag.string == author_name_comp['full_name']:
+                    author = DBLPAuthor(author_tag['urlpt'])
+                    candidate_authors.append(author)
+
+            target_author = candidate_authors[0]
+            coauthors_set_cdblp = set(map(lambda a: a['full_name'], author_cdblp.get_coauthors()))
+            coauthors_set_dblp  = set(candidate_authors[0].get_coauthors())
+            coauthor_count_max = len(set(coauthors_set_cdblp.intersection(coauthors_set_dblp)))
+            for candidate in candidate_authors:
+                coauthors_set_dblp  = set(candidate.get_coauthors())
+                coauthor_count = len(set(coauthors_set_cdblp).intersection(coauthors_set_dblp))
+                if coauthor_count > coauthor_count_max:
+                    target_author = candidate
+
+            return { 'cdblp': author_cdblp, 'dblp': target_author }
+
+        else:
+            if author_name in cached_set:
+                print('This is a CDBLP author w/ a English name on file.')
+            else:
+                print('This is a non-CDBLP author, not for demonstration now.')
+
+    @staticmethod
+    def get_publications_by_author(cached_set, author_name):
         """
         1. Get author's publications from C-DBLP and DBLP
         2. Merge
@@ -112,4 +152,7 @@ class DBLPQuery:
 #    print('Coauthors of {0} and {1}:'.format(author_name, a.author_urlpt))
 #    print(set(l1).intersection(set(l2)))
 
-print(DBLPQuery.get_cached_authors())
+cached_author_list = DBLPQuery.get_cached_authors()
+name_set = set(map(lambda a: a['full_name'], cached_author_list))
+
+DBLPQuery.get_publications_by_author(name_set, '高文')
