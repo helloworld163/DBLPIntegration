@@ -80,7 +80,7 @@ class DBLPAuthor:
             dblpkey_tag = publication_tag.findChild(href=re.compile('(/db/)(\w*)/(\w*)/(.*\.html#)(.*)'))
             try:
                 result = re.compile('(/db/)(\w*)/(\w*)/(.*)(\.html#)(.*)').findall(dblpkey_tag['href'])[0]
-                print(result)
+                #print(result)
                 venue_type = result[1]
                 venue = result[2]
                 venue_order = result[3]

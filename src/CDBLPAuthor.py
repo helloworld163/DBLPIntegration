@@ -59,7 +59,8 @@ class CDBLPAuthor:
                     if type(current_author) == NavigableString and self.author_name['zh'] in current_author.string:
                         authors.append(current_author.string.strip())
 
-                authors.append(author_tag.string.strip())
+                if isinstance(author_tag.string, str):
+                    authors.append(author_tag.string.strip())
 
                 current_author = author_tag.next_sibling
                 if type(current_author) == NavigableString and self.author_name['zh'] in current_author.string:
@@ -91,20 +92,20 @@ class CDBLPAuthor:
 
             publications.append(publication)
 
-            self.author = {
-                'author_name': self.author_name,
-                'coauthors': coauthors,
-                'publications': publications
-            }
+        self.author = {
+            'author_name': self.author_name,
+            'coauthors': coauthors,
+            'publications': publications
+        }
 
-            return self.author
+        return self.author
 
 
 
     def get_coauthors(self):
         coauthors = []
 
-        coauthor_table = self.dom.find(id='projectHistory').find_next_sibling('table')
+        coauthor_table = self.dom.find_all('table')[-2]
         coauthor_tags = coauthor_table.find_all(href=re.compile('^/author'))
         for coauthor_tag in coauthor_tags:
             coauthors.append(CDBLPAuthor.getEnglishName(coauthor_tag.string.strip()))
@@ -118,13 +119,31 @@ class CDBLPAuthor:
         pinyin.load_word()
         author_name_en_split = pinyin.hanzi2pinyin(author_name_zh.strip())
         # return author's English name
-        author_name = {
-            'zh': author_name_zh,
-            'last_name': author_name_en_split[0].capitalize(),
-            'first_name': author_name_en_split[1].capitalize() + ''.join(author_name_en_split[2:])
-        }
-        author_name['full_name'] = '{} {}'.format(author_name['first_name'], author_name['last_name'])
-        author_name['full_name_reverse'] = '{} {}'.format(author_name['last_name'], author_name['first_name'])
+        if isinstance(author_name_en_split, str):
+            author_name = {
+                'full_name': author_name_en_split
+            }
+
+        else:
+            if len(author_name_zh) > 1:
+                author_name = {
+                    'zh': author_name_zh,
+                    'last_name': author_name_en_split[0].capitalize(),
+                    'first_name': author_name_en_split[1].capitalize() + ''.join(author_name_en_split[2:])
+                }
+                author_name['full_name'] = '{} {}'.format(author_name['first_name'], author_name['last_name'])
+                author_name['full_name_reverse'] = '{} {}'.format(author_name['last_name'], author_name['first_name'])
+                if len(author_name_zh) == 3:
+                    author_name['full_name_dash'] = '{}-{} {}'.format(author_name_en_split[1].capitalize(), author_name_en_split[2], author_name['last_name'])
+            else:
+                author_name = {
+                    'zh': author_name_zh,
+                    'last_name': author_name_en_split[0].capitalize(),
+                    'first_name': ''
+                }
+                author_name['full_name'] = '{} {}'.format(author_name['first_name'], author_name['last_name'])
+                author_name['full_name_reverse'] = '{} {}'.format(author_name['last_name'], author_name['first_name'])
+
 
         return author_name
 
