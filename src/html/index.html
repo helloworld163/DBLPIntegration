@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>C-DBLP / DBLP Integration Demo</title>
+    <link href="stylesheets/bootstrap.css" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+    <h1>C-DBLP / DBLP Integration Demo</h1>
+    <hr>
+    <div>
+        <form action="query" method="POST">
+            <fieldset>
+                <legend>Query Type</legend>
+                <select name="query_type">
+                    <option value="pub">Find all publications of an author (in both DBLP and C-DBLP)</option>
+                    <option value="coauthor">Find all coauthors of an author (in both DBLP and C-DBLP) with combined coauthorship</option>
+                    <option value="venue">Find all venues (conferences, journals, etc.) that an author is involved</option>
+                    <option value="coauthor-pub">Find all publications coauthored by two authors</option>
+                    <option value="join-venue">Find authors that published in a journal in C-DBLP who have also published in a journal/conference in DBLP</option>
+                </select>
+            </fieldset>
+            <fieldset>
+                <legend>Author</legend>
+                <p><label for="author1">Main author's name</label><input type="text" id="author1" name="author1"></p>
+                <p><label for="author2">Another author's name</label><input type="text" id="author2" name="author2"></p>
+                <span class="help-block">
+                    <span class="label label-info">Note</span>
+                    If one author's name is in English and another author's name is in Chinese, then the main author has to be
+                    the one with Chinese name.
+                </span>
+            </fieldset>
+            <fieldset>
+                <legend>Venue</legend>
+                <p><label for="cdblp_venue">C-DBLP Venue</label><input type="text" id="cdblp_venue" name="cdblp_venue"></p>
+                <p><label for="dblp_venue">DBLP Venue</label><input type="text" id="dblp_venue" name="dblp_venue"></p>
+            </fieldset>
+            <input type="submit" value="Query!" name="submit" id="submit" class="btn btn-primary">
+        </form>
+    </div>
+</div>
+</body>
+</html>

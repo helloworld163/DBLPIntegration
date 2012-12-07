@@ -11,12 +11,21 @@ import re
 import json
 
 class CDBLPAuthor:
-    def __init__(self, author_name):
+
+    pinyin = PinYin()
+    pinyin.load_word()
+
+    def __init__(self, author_name, link=''):
 
         self.author_name = CDBLPAuthor.getEnglishName(author_name)
 
-        self.res = urlopen('http://cdblp.cn/search_result.php?author_name={}'.format(quote(self.author_name['zh'])))
+        if not link:
+            link = 'http://cdblp.cn/search_result.php?author_name={}&area=computer'.format(quote(self.author_name['zh']))
+
+        self.res = urlopen(link)
         self.dom = BeautifulSoup(self.res)
+
+        #self.get_all_authors()
 
         self.author = {
             'author_name': {},
@@ -35,6 +44,28 @@ class CDBLPAuthor:
                 }
             ]
         }
+
+    def get_all_authors(self):
+
+        l = []
+
+        all_name_tags = self.dom.find_all(href=re.compile('namedisambiguation'))
+
+        i = 0
+        for name_tag in all_name_tags:
+            if name_tag.string != 'Unknown':
+                print(i, self.author_name['zh'], 'from', name_tag.string)
+                l.append('http://cdblp.cn' + name_tag['href'][5:])
+            i += 1
+
+        c = int(input('There are several authors under this name, which one do you want to choose?\n> '))
+        if c < 0:
+            c = 0
+
+        self.res = urlopen(l[c])
+        self.dom = BeautifulSoup(self.res)
+
+        return l[c]
 
     def get_author(self):
 
@@ -108,16 +139,52 @@ class CDBLPAuthor:
         coauthor_table = self.dom.find_all('table')[-2]
         coauthor_tags = coauthor_table.find_all(href=re.compile('^/author'))
         for coauthor_tag in coauthor_tags:
-            coauthors.append(CDBLPAuthor.getEnglishName(coauthor_tag.string.strip()))
+            coauthored_pub_tags = coauthor_tag.parent.find_next_sibling('td').find_all('a')
+            author = CDBLPAuthor.getEnglishName(coauthor_tag.string.strip())
+            author['count'] = len(coauthored_pub_tags)
+            author['pubs'] = map(lambda t: t['href'][1:], coauthored_pub_tags)
+            coauthors.append(author)
 
         return coauthors
         #return list(map(lambda a: '{} {}'.format(a['first_name'], a['last_name']), self.coauthors_en))
 
     @staticmethod
     def getEnglishName(author_name_zh):
-        pinyin = PinYin()
-        pinyin.load_word()
-        author_name_en_split = pinyin.hanzi2pinyin(author_name_zh.strip())
+
+        author_name_en_split = CDBLPAuthor.pinyin.hanzi2pinyin(author_name_zh.strip())
+        # return author's English name
+        if isinstance(author_name_en_split, str):
+            author_name = {
+                'full_name': author_name_en_split
+            }
+
+        else:
+            if len(author_name_zh) > 1:
+                author_name = {
+                    'zh': author_name_zh,
+                    'last_name': author_name_en_split[0].capitalize(),
+                    'first_name': author_name_en_split[1].capitalize() + ''.join(author_name_en_split[2:])
+                }
+                author_name['full_name'] = '{} {}'.format(author_name['first_name'], author_name['last_name'])
+                author_name['full_name_reverse'] = '{} {}'.format(author_name['last_name'], author_name['first_name'])
+                if len(author_name_zh) == 3:
+                    author_name['full_name_dash'] = '{}-{} {}'.format(author_name_en_split[1].capitalize(), author_name_en_split[2], author_name['last_name'])
+            else:
+                author_name = {
+                    'zh': author_name_zh,
+                    'last_name': author_name_en_split[0].capitalize(),
+                    'first_name': ''
+                }
+                author_name['full_name'] = '{} {}'.format(author_name['first_name'], author_name['last_name'])
+                author_name['full_name_reverse'] = '{} {}'.format(author_name['last_name'], author_name['first_name'])
+
+
+        return author_name
+
+    @staticmethod
+    def get_english_name(author_name_zh, py_obj):
+
+        author_name_en_split = py_obj.hanzi2pinyin(author_name_zh.strip())
         # return author's English name
         if isinstance(author_name_en_split, str):
             author_name = {
@@ -271,6 +338,7 @@ class CDBLPAuthor:
         return publication_dict
 
 if __name__ == '__main__':
-    #z = CDBLPAuthor('刘均')
+    z = CDBLPAuthor('王伟')
+    print(z.get_all_authors())
     #print(z.get_author())
     pass

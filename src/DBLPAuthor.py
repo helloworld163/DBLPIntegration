@@ -51,8 +51,12 @@ class DBLPAuthor:
                 # get author's name
                 author_name = author_tag.contents[0]
                 # get author's urlpt
-                regex = re.compile("(pers/hd/)(.*)(.html$)")
-                author_urlpt = regex.findall(author_tag['href'])[0][1]
+                regex = re.compile("(pers/hd/)(.*)(\.html$)")
+                try:
+                    author_urlpt = regex.findall(author_tag['href'])[0][1]
+                except:
+                    author_urlpt = ''
+                    print('Err:', author_tag['href'])
                 # add author to list
                 if counter == 0:
                     if author_tag.find_previous_sibling('span', 'this-person'):
@@ -86,6 +90,12 @@ class DBLPAuthor:
                 venue_order = result[3]
                 key = result[5]
                 misc = dblpkey_tag.next_sibling
+                year_2bit = key[-2:]
+                year = ''
+                if year_2bit > '20':
+                    year = '19' + year_2bit
+                else:
+                    year = '20' + year_2bit
                 publication = {
                     'title': title,
                     'authors': authors,
@@ -93,7 +103,8 @@ class DBLPAuthor:
                     'venue': venue.upper(),
                     'venue-order': venue_order,
                     'dblpkey': '{}/{}/{}'.format(venue_type, venue, key),
-                    'misc': misc
+                    'misc': misc,
+                    'year': year
                 }
                 publications.append(publication)
             except TypeError:
@@ -112,6 +123,11 @@ class DBLPAuthor:
         coauthor_tags = self.coauthor_dom.find_all('author')
         self.author['coauthors'] = list(map(lambda a: a.contents[0], coauthor_tags))
         return self.author['coauthors']
+
+    def get_coauthors_with_count(self):
+        coauthor_tags = self.coauthor_dom.find_all('author')
+        coauthors = list(map(lambda a: {'name': a.string, 'urlpt': a['urlpt'], 'count': int(a['count']) }, coauthor_tags))
+        return coauthors
 
     @staticmethod
     def get_authors(author_name):

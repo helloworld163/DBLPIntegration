@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Query Results</title>
+    <link href="stylesheets/bootstrap.css" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+    <h1>Query Results</h1>
+    <hr>
+    <div>
+        % if type == 'pub':
+        <h3>Publications of '${author}'</h3>
+        % for data in data_list:
+        <h4>Author '${author}' from ${data['aff']} (DBLP Identifier: ${data['urlpt']})</h4>
+        <h5>C-DBLP Publications</h5>
+        <table class="table table-striped">
+            <tr><th>Title</th><th>Authors</th><th>Type</th><th>Venue</th><th>Year</th></tr>
+            % for pub in data.get('cdblp', []):
+            <tr><td>${pub['title']}</td><td>${', '.join(pub['authors'])}</td><td>${pub['venue-type']}</td><td>${pub['venue']}</td><td>${pub['year']}</td></tr>
+            % endfor
+        </table>
+        <h5>DBLP Publications</h5>
+        <table class="table table-striped">
+            <tr><th>Title</th><th>Authors</th><th>Type</th><th>Venue</th><th>Year</th></tr>
+            % for pub in data.get('dblp', []):
+            <tr><td>${pub['title']}</td><td>${', '.join(list(map(lambda a: a['name'], pub['authors'])))}</td><td>${pub['venue-type']}</td><td>${pub['venue']}</td><td>${pub['year']}</td></tr>
+            % endfor
+        </table>
+        <hr>
+        % endfor
+
+        % elif type == 'coauthor':
+        <h3>Coauthors of '${author}'</h3>
+        <table class="table table-striped">
+            <tr><th>English Name</th><th>Chinese Name</th><th>Coauthor in Both Databases?</th></tr>
+            % for key, value in data.items():
+            <tr><td>${key}</td><td>${value.get('zh')}</td>
+                % if value.get('en') and value.get('zh'):
+                <td>Yes</td>
+                % else:
+                <td></td>
+                % endif
+            </tr>
+            % endfor
+        </table>
+
+        % elif type == 'venue':
+        <h3>Journals/Conferences/... '${author}' was involved</h3>
+        <table class="table table-striped">
+            <tr><th>Venue Name</th><th>Venue Type</th><th>Appeared Times</th></tr>
+            % for v in data:
+            <tr><td>${v.get('venue')}</td><td>${v.get('type')}</td><td>${v.get('count')}</td></tr>
+            % endfor
+        </table>
+
+        % elif type == 'coauthor-pub':
+        <h3>Coauthored Publications of '${author1}' and '${author2}'</h3>
+        <h4>C-DBLP Publications</h4>
+        <table class="table table-striped">
+            <tr><th>Title</th><th>Authors</th><th>Type</th><th>Venue</th><th>Year</th></tr>
+            % for pub in data.get('cdblp', []):
+            <tr><td>${pub['title']}</td><td>${', '.join(pub['authors'])}</td><td>${pub['venue-type']}</td><td>${pub['venue']}</td><td>${pub['year']}</td></tr>
+            % endfor
+        </table>
+        <h4>DBLP Publications</h4>
+        <table class="table table-striped">
+            <tr><th>Title</th><th>Authors</th><th>Type</th><th>Venue</th><th>Year</th></tr>
+            % for pub in data.get('dblp', []):
+            <tr><td>${pub['title']}</td><td>${', '.join(list(map(lambda a: a['name'], pub['authors'])))}</td><td>${pub['venue-type']}</td><td>${pub['venue']}</td><td>${pub['year']}</td></tr>
+            % endfor
+        </table>
+
+        % elif type == 'join-venue':
+        <h3>Authors that published in ${cdblp_venue} (C-DBLP) who have also published in ${dblp_venue} (DBLP)</h3>
+        <table class="table table-striped">
+            <tr><th>Chinese Name</th><th>English Name</th></tr>
+            % for v in data:
+            <tr><td>${v.get('name_en')}</td><td>${v.get('name')}</td></tr>
+            % endfor
+        </table>
+
+        % endif
+        <a href="/">Back for another query</a>
+    </div>
+</div>
+</body>
+</html>
