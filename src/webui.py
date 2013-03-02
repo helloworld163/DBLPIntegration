@@ -9,6 +9,11 @@ lookup = TemplateLookup(directories=['html'])
 class Root(object):
 
     @cherrypy.expose
+    def ww(self):
+        tmpl = lookup.get_template('ww.html')
+        return tmpl.render()
+
+    @cherrypy.expose
     def index(self):
         tmpl = lookup.get_template('index.html')
         return tmpl.render()
@@ -23,7 +28,7 @@ class Root(object):
 
         if query_type == 'pub':
             result = get_publications_by_u(cached_author_list, name_set, author1)
-            return tmpl.render(type=query_type, data_list=result, author=author1)
+            return tmpl.render(type=query_type, data=result, author=author1)
 
         elif query_type == 'coauthor':
             result = DBLPQuery.get_coauthors_by_author(cached_author_list, name_set, author1)

@@ -21,6 +21,8 @@ class CDBLPAuthor:
 
         if not link:
             link = 'http://cdblp.cn/search_result.php?author_name={}&area=computer'.format(quote(self.author_name['zh']))
+        elif author_name == '王伟':
+            link = 'http://127.0.0.1/ww'
 
         self.res = urlopen(link)
         self.dom = BeautifulSoup(self.res)

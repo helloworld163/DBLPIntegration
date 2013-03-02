@@ -11,19 +11,19 @@
     <div>
         % if type == 'pub':
         <h3>Publications of '${author}'</h3>
-        % for data in data_list:
-        <h4>Author '${author}' from ${data['aff']} (DBLP Identifier: ${data['urlpt']})</h4>
+        % for d in data:
+        <h4>Author '${author}' from ${d['aff']} (DBLP Identifier: ${d['urlpt']})</h4>
         <h5>C-DBLP Publications</h5>
         <table class="table table-striped">
             <tr><th>Title</th><th>Authors</th><th>Type</th><th>Venue</th><th>Year</th></tr>
-            % for pub in data.get('cdblp', []):
+            % for pub in d.get('cdblp', []):
             <tr><td>${pub['title']}</td><td>${', '.join(pub['authors'])}</td><td>${pub['venue-type']}</td><td>${pub['venue']}</td><td>${pub['year']}</td></tr>
             % endfor
         </table>
         <h5>DBLP Publications</h5>
         <table class="table table-striped">
             <tr><th>Title</th><th>Authors</th><th>Type</th><th>Venue</th><th>Year</th></tr>
-            % for pub in data.get('dblp', []):
+            % for pub in d.get('dblp', []):
             <tr><td>${pub['title']}</td><td>${', '.join(list(map(lambda a: a['name'], pub['authors'])))}</td><td>${pub['venue-type']}</td><td>${pub['venue']}</td><td>${pub['year']}</td></tr>
             % endfor
         </table>
